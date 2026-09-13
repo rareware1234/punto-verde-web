@@ -107,12 +107,15 @@ const StaffHeroCard = ({ emp, tienda, yo = false, onOpen, onContext }) => {
       <img className="hero-card-emblem" src={EMP_FORMATO_LOGO[tienda?.formato] || empLogoLight} alt="" />
       <div className="emp-card-top">
         <div className="emp-card-avatar">
-          <EmpleadoAvatar empleado={emp} size={64} />
+          <EmpleadoAvatar empleado={emp} size={72} />
         </div>
         {yo && <span className="emp-card-yo">Yo</span>}
         {!yo && emp.activo === false && <span className="emp-card-inactivo">Inactivo</span>}
       </div>
-      <div className="hero-card-title emp-card-title">{emp.nombre}</div>
+      <div className="hero-card-title emp-card-title">
+        <span className="emp-card-line">{emp.nombrePrimero || emp.nombre}</span>
+        <span className="emp-card-line emp-card-last">{emp.apellidoPaterno || emp.apellidoMaterno || ''}</span>
+      </div>
       <div className="emp-card-sub">{tienda?.nombre || emp.tiendaNombre || 'Sin sucursal asignada'}</div>
       <div className="emp-card-footer">
         <span className="emp-card-role">{getRolShortName(emp.rol)}</span>

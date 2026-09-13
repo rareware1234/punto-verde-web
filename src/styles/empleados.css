@@ -160,6 +160,7 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
+  margin-top: 44px;
 }
 .emp-card-avatar {
   width: 76px;
