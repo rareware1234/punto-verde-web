@@ -1146,13 +1146,6 @@ const Empleados = () => {
                     <i className="bi bi-plus-lg"></i>
                   </button>
                 )}
-                <div className="staff-avatar-btn" onClick={() => window.location.hash = '#/perfil'}>
-                  {currentUser?.fotoUrl ? (
-                    <img src={currentUser.fotoUrl} alt="" />
-                  ) : (
-                    <span>{currentUser?.nombre?.charAt(0)?.toUpperCase() || '?'}</span>
-                  )}
-                </div>
               </div>
             </header>
 
