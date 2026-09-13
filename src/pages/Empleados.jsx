@@ -859,6 +859,7 @@ const Empleados = () => {
   const [toast, setToast] = useState('');
   const showToast = (msg, ms = 3000) => { setToast(msg); setTimeout(() => setToast(''), ms); };
   const [selectedEmpleado, setSelectedEmpleado] = useState(null);
+  const [modalEmpleado, setModalEmpleado] = useState(null);
   const [selectedTienda, setSelectedTienda] = useState(null);
   const [showNuevoEmpleado, setShowNuevoEmpleado] = useState(false);
   const [showNuevaTarea, setShowNuevaTarea] = useState(false);
@@ -922,6 +923,8 @@ const Empleados = () => {
     const tid = emp?.tiendaAsignada || emp?.tiendaId;
     setSelectedTienda(tid ? getTiendaById(tid) : null);
   };
+
+  const openModal = (emp) => setModalEmpleado(emp);
 
   const handleContextMenu = (e, emp) => {
     e.preventDefault();
@@ -1167,7 +1170,7 @@ const Empleados = () => {
                         <h2>Yo</h2>
                       </div>
                       <div className="inicio-carousel inicio-carousel--tight">
-                        <StaffHeroCard emp={yo} tienda={getTiendaById(yo.tiendaAsignada || yo.tiendaId)} yo onOpen={handleSelect} onContext={handleContextMenu} />
+                        <StaffHeroCard emp={yo} tienda={getTiendaById(yo.tiendaAsignada || yo.tiendaId)} yo onOpen={openModal} onContext={handleContextMenu} />
                       </div>
                     </section>
                   );
@@ -1188,7 +1191,7 @@ const Empleados = () => {
                       </div>
                       <div className="inicio-carousel inicio-carousel--tight">
                         {emps.map(emp => (
-                          <StaffHeroCard key={emp.id || emp.uid} emp={emp} tienda={getTiendaById(emp.tiendaAsignada || emp.tiendaId)} onOpen={handleSelect} onContext={handleContextMenu} />
+                          <StaffHeroCard key={emp.id || emp.uid} emp={emp} tienda={getTiendaById(emp.tiendaAsignada || emp.tiendaId)} onOpen={openModal} onContext={handleContextMenu} />
                         ))}
                       </div>
                     </section>
@@ -1199,6 +1202,58 @@ const Empleados = () => {
           </>
         )}
       </div>
+
+      {modalEmpleado && (
+        <div className="emp-modal-overlay" onClick={() => setModalEmpleado(null)} style={{ position: 'fixed', inset: 0, zIndex: 2000, background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(2px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+          <div className="emp-modal-card" onClick={e => e.stopPropagation()} style={{ width: 'min(420px, 92vw)', maxHeight: '86vh', overflowY: 'auto', borderRadius: 18, background: '#fff', boxShadow: '0 24px 70px rgba(0,0,0,0.35)' }}>
+            <div className="emp-modal-titlebar">
+              <span className="emp-dot emp-dot-close" onClick={() => setModalEmpleado(null)} aria-label="Cerrar" title="Cerrar"></span>
+              <span className="emp-dot emp-dot-min"></span>
+              <span className="emp-dot emp-dot-max"></span>
+              <span className="emp-modal-title">{modalEmpleado.nombrePrimero || modalEmpleado.nombre}</span>
+            </div>
+            <div style={{ background: `linear-gradient(135deg, ${getHeaderGradient(modalEmpleado, getTiendaById(modalEmpleado.tiendaAsignada || modalEmpleado.tiendaId))[0]}, ${getHeaderGradient(modalEmpleado, getTiendaById(modalEmpleado.tiendaAsignada || modalEmpleado.tiendaId))[1]})`, padding: '18px 22px', display: 'flex', alignItems: 'center', gap: 14, borderTopLeftRadius: 0, borderTopRightRadius: 0 }}>
+              <EmpleadoAvatar empleado={modalEmpleado} size={64} />
+              <div style={{ minWidth: 0 }}>
+                <div style={{ fontSize: 19, fontWeight: 800, color: '#fff' }}>{modalEmpleado.nombrePrimero || modalEmpleado.nombre}</div>
+                <div style={{ fontSize: 14, fontWeight: 600, color: 'rgba(255,255,255,0.85)' }}>{modalEmpleado.apellidoPaterno || modalEmpleado.apellidoMaterno || ''}</div>
+              </div>
+              <button onClick={() => setModalEmpleado(null)} style={{ marginLeft: 'auto', background: 'rgba(255,255,255,0.2)', border: 'none', width: 32, height: 32, borderRadius: '50%', color: '#fff', fontSize: 18, cursor: 'pointer', flexShrink: 0 }} aria-label="Cerrar">×</button>
+            </div>
+            <div style={{ padding: '18px 22px' }}>
+              {(modalEmpleado.email || modalEmpleado.correo) && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12, color: '#374151', fontSize: 13.5 }}>
+                  <i className="bi bi-envelope" style={{ color: 'var(--role-primary)' }}></i>
+                  <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{modalEmpleado.email || modalEmpleado.correo}</span>
+                </div>
+              )}
+              {(modalEmpleado.telefono || modalEmpleado.celular) && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12, color: '#374151', fontSize: 13.5 }}>
+                  <i className="bi bi-telephone" style={{ color: 'var(--role-primary)' }}></i>
+                  {modalEmpleado.telefono || modalEmpleado.celular}
+                </div>
+              )}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12, color: '#374151', fontSize: 13.5 }}>
+                <i className="bi bi-briefcase" style={{ color: 'var(--role-primary)' }}></i>
+                <span className="emp-card-role">{getRolShortName(modalEmpleado.rol || 'STAFF')}</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12, color: '#374151', fontSize: 13.5 }}>
+                <i className="bi bi-shop" style={{ color: 'var(--role-primary)' }}></i>
+                <span>{getTiendaById(modalEmpleado.tiendaAsignada || modalEmpleado.tiendaId)?.nombre || 'Sin sucursal asignada'}</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, color: '#374151', fontSize: 13.5 }}>
+                <i className="bi bi-person-badge" style={{ color: 'var(--role-primary)' }}></i>
+                <span>{formatNumEmpleado(modalEmpleado.numEmpleado)}</span>
+              </div>
+              {modalEmpleado.activo === false && (
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, marginTop: 14, background: 'rgba(220,38,38,0.08)', color: '#B91C1C', padding: '6px 14px', borderRadius: 999, fontSize: 12.5, fontWeight: 700 }}>
+                  <i className="bi bi-person-slash"></i> Inactivo
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {contextMenu && (
         <div

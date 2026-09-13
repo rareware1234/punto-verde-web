@@ -275,3 +275,61 @@
     grid-template-columns: repeat(4, 1fr);
   }
 }
+
+/* ─── Modal flotante estilo ventana macOS ─── */
+.emp-modal-overlay {
+  animation: emp-modal-fade 0.18s ease-out;
+}
+
+.emp-modal-card {
+  animation: emp-modal-pop 0.22s cubic-bezier(0.2, 0.9, 0.3, 1.2);
+}
+
+@keyframes emp-modal-fade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes emp-modal-pop {
+  from { opacity: 0; transform: scale(0.92) translateY(10px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* Barra de título macOS: luces de tráfico + titulo */
+.emp-modal-titlebar {
+  display: flex;
+  align-items: center;
+  gap: 8;
+  padding: 12px 16px;
+  background: linear-gradient(180deg, #f6f7f9, #eceef1);
+  border-top-left-radius: 18px;
+  border-top-right-radius: 18px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.emp-modal-title {
+  margin-left: 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #4b5563;
+  letter-spacing: -0.1px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.emp-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: filter 0.15s ease;
+  flex-shrink: 0;
+}
+.emp-dot:hover { filter: brightness(0.92); }
+
+.emp-dot-close { background: #ff5f57; border: 1px solid #e0443e; }
+.emp-dot-min   { background: #febc2e; border: 1px solid #d99a1d; cursor: default; }
+.emp-dot-max   { background: #28c840; border: 1px solid #1eaa30; cursor: default; }
+
