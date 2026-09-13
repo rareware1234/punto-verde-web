@@ -142,16 +142,28 @@
    ============================================ */
 .hero-card--emp {
   width: 260px;
-  height: 300px;
+  height: 306px;
   cursor: pointer;
 }
 .hero-card--emp .hero-card-title {
-  margin-top: 16px;
-  font-size: 19px;
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
   max-width: 100%;
+}
+.emp-card-line {
+  display: block;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  font-size: 19px;
+}
+.emp-card-last {
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.8);
+  display: block;
 }
 
 .emp-card-top {
@@ -187,13 +199,17 @@
 }
 .emp-card-inactivo { background: rgba(220, 38, 38, 0.6); }
 
-.emp-card-sub {
-  font-size: 11.5px;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.75);
+.emp-card-line {
+  display: block;
+  max-width: 100%;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+.emp-card-line--last {
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.8);
 }
 
 .emp-card-footer {
