@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useEmpresa } from '../context/EmpresaContext';
 import { filterByActiveEmpresa } from '../lib/empresaActiva';
@@ -857,9 +857,6 @@ const Empleados = () => {
   const showToast = (msg, ms = 3000) => { setToast(msg); setTimeout(() => setToast(''), ms); };
   const [selectedEmpleado, setSelectedEmpleado] = useState(null);
   const [selectedTienda, setSelectedTienda] = useState(null);
-  const [searchText, setSearchText] = useState('');
-  const [filtroRol, setFiltroRol] = useState('todos');
-  const [filtroSucursal, setFiltroSucursal] = useState('todas');
   const [showNuevoEmpleado, setShowNuevoEmpleado] = useState(false);
   const [showNuevaTarea, setShowNuevaTarea] = useState(false);
   const [contextMenu, setContextMenu] = useState(null);
@@ -916,28 +913,6 @@ const Empleados = () => {
   };
 
   const getTiendaById = (id) => tiendas.find(t => t.id === id);
-
-  const filteredEmpleados = useMemo(() => {
-    let result = empleados;
-    
-    if (searchText) {
-      const lower = searchText.toLowerCase();
-      result = result.filter(e =>
-        e.nombre?.toLowerCase().includes(lower) ||
-        e.numEmpleado?.toLowerCase().includes(lower)
-      );
-    }
-    
-    if (filtroRol !== 'todos') {
-      result = result.filter(e => e.rol === filtroRol.toUpperCase());
-    }
-    
-    if (filtroSucursal !== 'todas') {
-      result = result.filter(e => (e.tiendaAsignada || e.tiendaId) === filtroSucursal);
-    }
-    
-    return result;
-  }, [empleados, searchText, filtroRol, filtroSucursal]);
 
   const handleSelect = (emp) => {
     setSelectedEmpleado(emp);
@@ -998,33 +973,6 @@ const Empleados = () => {
     });
     setShowNuevoEmpleado(true);
     setContextMenu(null);
-  };
-
-  const getRolFilter = () => {
-    if (!isManager) return null;
-    // Admin ve todos los roles; manager solo ve su staff
-    if (currentUser?.rol === 'admin') {
-      return [
-        { value: 'todos',   label: 'Todos'   },
-        { value: 'staff',   label: 'Staff'   },
-        { value: 'manager', label: 'Manager' },
-        { value: 'admin',   label: 'Admin'   },
-      ];
-    }
-    return [
-      { value: 'todos', label: 'Todos' },
-      { value: 'staff', label: 'Staff' },
-    ];
-  };
-
-  const getSucursalFilters = () => {
-    const opts = [{ value: 'todas', label: 'Todas' }];
-    const sucursalesConEmpleados = new Set(empleados.map(e => e.tiendaAsignada || e.tiendaId).filter(Boolean));
-    sucursalesConEmpleados.forEach(id => {
-      const tienda = getTiendaById(id);
-      if (tienda) opts.push({ value: id, label: tienda.nombre });
-    });
-    return opts;
   };
 
   const FORM_EMPTY = {
@@ -1208,35 +1156,13 @@ const Empleados = () => {
               </div>
             </header>
 
-            <div className="inicio-padded staff-toolbar">
-              <div className="staff-search">
-                <i className="bi bi-search"></i>
-                <input
-                  type="text"
-                  value={searchText}
-                  onChange={e => setSearchText(e.target.value)}
-                  placeholder="Buscar empleado..."
-                />
-                {searchText && <button onClick={() => setSearchText('')} className="staff-search-clear">×</button>}
-              </div>
-              {getRolFilter() && (
-                <div className="staff-chips">
-                  {getRolFilter().map(f => (
-                    <button key={f.value} className={`staff-chip${filtroRol === f.value ? ' active' : ''}`} onClick={() => setFiltroRol(f.value)}>
-                      {f.label}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-
             {loading ? (
               <div className="inicio-spinner" />
-            ) : filteredEmpleados.length === 0 ? (
+            ) : empleados.length === 0 ? (
               <div className="inicio-padded staff-empty">No hay empleados</div>
             ) : (
               <>
-                {currentUser && filtroRol === 'todos' && !searchText && (() => {
+                {currentUser && (() => {
                   const yo = empleados.find(e => e.uid === currentUser.uid);
                   if (!yo) return null;
                   return (
@@ -1252,8 +1178,8 @@ const Empleados = () => {
                 })()}
 
                 {ROL_GROUPS.map(group => {
-                  const showYo = currentUser && filtroRol === 'todos' && !searchText;
-                  const emps = filteredEmpleados.filter(e =>
+                  const showYo = currentUser;
+                  const emps = empleados.filter(e =>
                     group.roles.includes((e.rol || '').toUpperCase()) &&
                     !(showYo && e.uid === currentUser?.uid)
                   );
