@@ -700,16 +700,6 @@ const Products = () => {
                         style={{ background: cs.gradient, position: 'relative' }}
                         onClick={() => { setFilterMarca(null); setFilterCategoria(cat); }}
                       >
-                        {canEdit && (
-                          <span
-                            role="button"
-                            onClick={(e) => { e.stopPropagation(); setCatEditor(cat); }}
-                            title="Editar categoría"
-                            style={{ position: 'absolute', top: 8, right: 8, width: 26, height: 26, borderRadius: '50%', background: 'rgba(0,0,0,0.35)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, zIndex: 2 }}
-                          >
-                            <i className="bi bi-pencil" />
-                          </span>
-                        )}
                         <img className="pb-card-emblem" src={logoBlanco} alt="" />
                         {icon
                           ? <img className="pb-cat-icon" src={icon} alt="" />

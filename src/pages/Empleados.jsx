@@ -60,7 +60,7 @@ const formatDateShort = (date) => {
 
 const formatNumEmpleado = (num) => num?.startsWith('EMP') ? num : `EMP-${num}`;
 
-const getRolShortName = (rol) => ({ STAFF: 'Staff', MANAGER: 'Manager', ADMIN: 'Admin' }[rol] || rol);
+const getRolShortName = (rol) => ({ STAFF: 'Staff', MANAGER: 'Manager', LIDER: 'Líder', ADMIN: 'Admin', DIRECTOR: 'Director' }[rol] || rol);
 
 const calcularVacacionesLFT = (fechaIngreso) => {
   if (!fechaIngreso) return { años: 0, dias: 0 };
@@ -87,6 +87,39 @@ const getInicioSemanaPasada = () => {
   const inicio = new Date(inicioActual);
   inicio.setDate(inicio.getDate() - 7);
   return inicio;
+};
+
+const ROL_GROUPS = [
+  { key: 'staff', label: 'Staff', roles: ['STAFF'] },
+  { key: 'managers', label: 'Managers', roles: ['MANAGER', 'LIDER'] },
+  { key: 'directivos', label: 'Directivos', roles: ['ADMIN', 'DIRECTOR'] },
+];
+
+const StaffHeroCard = ({ emp, tienda, yo = false, onOpen, onContext }) => {
+  const gradient = getHeaderGradient(emp, tienda);
+  return (
+    <div
+      className="hero-card hero-card--emp"
+      style={{ background: `linear-gradient(135deg, ${gradient[0]}, ${gradient[1]})`, cursor: 'pointer' }}
+      onClick={() => onOpen(emp)}
+      onContextMenu={(e) => onContext && onContext(e, emp)}
+    >
+      <img className="hero-card-emblem" src={EMP_FORMATO_LOGO[tienda?.formato] || empLogoLight} alt="" />
+      <div className="emp-card-top">
+        <div className="emp-card-avatar">
+          <EmpleadoAvatar empleado={emp} size={44} />
+        </div>
+        {yo && <span className="emp-card-yo">Yo</span>}
+        {!yo && emp.activo === false && <span className="emp-card-inactivo">Inactivo</span>}
+      </div>
+      <div className="hero-card-title emp-card-title">{emp.nombre}</div>
+      <div className="emp-card-sub">{tienda?.nombre || emp.tiendaNombre || 'Sin sucursal asignada'}</div>
+      <div className="emp-card-footer">
+        <span className="emp-card-role">{getRolShortName(emp.rol)}</span>
+        <span className="emp-card-num">{formatNumEmpleado(emp.numEmpleado)}</span>
+      </div>
+    </div>
+  );
 };
 
 const EmpleadoAvatar = ({ empleado, size = 32 }) => {
@@ -906,25 +939,6 @@ const Empleados = () => {
     return result;
   }, [empleados, searchText, filtroRol, filtroSucursal]);
 
-  const groupedEmpleados = useMemo(() => {
-    const grouped = {};
-    filteredEmpleados.forEach(emp => {
-      // Group by apellidoPaterno first letter (matching Swift), fallback to nombre
-      const sortKey = emp.apellidoPaterno || emp.nombre || '?';
-      const letter = sortKey[0].toUpperCase();
-      if (!grouped[letter]) grouped[letter] = [];
-      grouped[letter].push(emp);
-    });
-    Object.keys(grouped).forEach(key => {
-      grouped[key].sort((a, b) => {
-        const ka = (a.apellidoPaterno || a.nombre || '').toLowerCase();
-        const kb = (b.apellidoPaterno || b.nombre || '').toLowerCase();
-        return ka.localeCompare(kb);
-      });
-    });
-    return grouped;
-  }, [filteredEmpleados]);
-
   const handleSelect = (emp) => {
     setSelectedEmpleado(emp);
     const tid = emp?.tiendaAsignada || emp?.tiendaId;
@@ -1164,147 +1178,105 @@ const Empleados = () => {
   }
 
   return (
-    <div className="empleados-container">
-      <div className={`empleados-sidebar${selectedEmpleado ? ' has-selection' : ''}`}>
-        <div className="empleados-list-header">
-          <h1 style={{ fontSize: 30, fontWeight: 800, color: '#fff', margin: 0 }}>Staff</h1>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            {canEdit && (
-              <button
-                onClick={() => { setFormData(FORM_EMPTY); setEditingEmpleado(null); setShowNuevoEmpleado(true); }}
-                style={{ background: 'none', border: 'none', cursor: 'pointer' }}
-              >
-                <i className="bi bi-plus-circle-fill" style={{ fontSize: 22, color: '#fff' }}></i>
-              </button>
-            )}
-            {currentUser?.fotoUrl ? (
-              <img src={currentUser.fotoUrl} alt="" onClick={() => window.location.hash = '#/perfil'}
-                style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover', cursor: 'pointer', border: '2px solid rgba(255,255,255,0.5)' }} />
+    <div className={`inicio-page${selectedEmpleado ? ' inicio-card-open' : ''}`}>
+      <div className="inicio-inner">
+        {selectedEmpleado ? (
+          <EmpleadoDetalle
+            empleado={selectedEmpleado}
+            tiendas={tiendas}
+            onEdit={() => handleEdit(selectedEmpleado)}
+            onNuevaTarea={() => setShowNuevaTarea(true)}
+            onBack={() => setSelectedEmpleado(null)}
+          />
+        ) : (
+          <>
+            <header className="inicio-header">
+              <h1>Staff</h1>
+              <div className="staff-header-actions">
+                {canEdit && (
+                  <button className="staff-add-btn" onClick={() => { setFormData(FORM_EMPTY); setEditingEmpleado(null); setShowNuevoEmpleado(true); }} aria-label="Nuevo empleado">
+                    <i className="bi bi-plus-lg"></i>
+                  </button>
+                )}
+                <div className="staff-avatar-btn" onClick={() => window.location.hash = '#/perfil'}>
+                  {currentUser?.fotoUrl ? (
+                    <img src={currentUser.fotoUrl} alt="" />
+                  ) : (
+                    <span>{currentUser?.nombre?.charAt(0)?.toUpperCase() || '?'}</span>
+                  )}
+                </div>
+              </div>
+            </header>
+
+            <div className="inicio-padded staff-toolbar">
+              <div className="staff-search">
+                <i className="bi bi-search"></i>
+                <input
+                  type="text"
+                  value={searchText}
+                  onChange={e => setSearchText(e.target.value)}
+                  placeholder="Buscar empleado..."
+                />
+                {searchText && <button onClick={() => setSearchText('')} className="staff-search-clear">×</button>}
+              </div>
+              {getRolFilter() && (
+                <div className="staff-chips">
+                  {getRolFilter().map(f => (
+                    <button key={f.value} className={`staff-chip${filtroRol === f.value ? ' active' : ''}`} onClick={() => setFiltroRol(f.value)}>
+                      {f.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {loading ? (
+              <div className="inicio-spinner" />
+            ) : filteredEmpleados.length === 0 ? (
+              <div className="inicio-padded staff-empty">No hay empleados</div>
             ) : (
-              <div onClick={() => window.location.hash = '#/perfil'}
-                style={{ width: 32, height: 32, borderRadius: '50%', background: 'rgba(255,255,255,0.2)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 700, color: '#fff', border: '2px solid rgba(255,255,255,0.4)' }}>
-                {currentUser?.nombre?.charAt(0)?.toUpperCase() || '?'}
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Search input */}
-        <div style={{ padding: '8px 12px', background: 'rgba(255,255,255,0.08)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.18)', borderRadius: 10, padding: '0 10px', height: 34 }}>
-            <i className="bi bi-search" style={{ color: 'rgba(255,255,255,0.5)', fontSize: 12 }} />
-            <input
-              type="text"
-              value={searchText}
-              onChange={e => setSearchText(e.target.value)}
-              placeholder="Buscar empleado..."
-              style={{ flex: 1, background: 'none', border: 'none', outline: 'none', color: '#fff', fontSize: 13 }}
-            />
-            {searchText && <button onClick={() => setSearchText('')} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.5)', cursor: 'pointer', fontSize: 15, lineHeight: 1 }}>×</button>}
-          </div>
-          {/* Rol filter chips */}
-          <div style={{ display: 'flex', gap: 4, marginTop: 6, flexWrap: 'wrap' }}>
-            {[
-              { key: 'todos', label: 'Todos' },
-              { key: 'staff', label: 'Staff' },
-              { key: 'manager', label: 'Manager' },
-              { key: 'admin', label: 'Admin' },
-            ].map(f => (
-              <button key={f.key}
-                onClick={() => setFiltroRol(f.key)}
-                style={{ padding: '3px 10px', borderRadius: 999, fontSize: 11, fontWeight: 600, cursor: 'pointer', border: '1px solid rgba(255,255,255,0.3)', background: filtroRol === f.key ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.1)', color: filtroRol === f.key ? 'var(--text-dark)' : 'rgba(255,255,255,0.85)' }}>
-                {f.label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div className="empleados-list-scroll">
-          {/* Pinned current user at top */}
-          {currentUser && filtroRol === 'todos' && !searchText && (() => {
-            const yo = empleados.find(e => e.uid === currentUser.uid);
-            if (!yo) return null;
-            const isSelected = selectedEmpleado?.uid === yo.uid;
-            return (
-              <div>
-                <div style={{ padding: '3px 16px', fontSize: 11, fontWeight: 700, color: 'var(--role-primary)', backgroundColor: 'rgba(0,0,0,0.02)', borderBottom: '1px solid #E4E6EA' }}>
-                  Yo
-                </div>
-                <div onClick={() => handleSelect(yo)}
-                  style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 16px', cursor: 'pointer', backgroundColor: isSelected ? '#F4F5F7' : 'white' }}>
-                  <EmpleadoAvatar empleado={yo} size={42} />
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-dark)' }}>{yo.nombre}</div>
-                    <div style={{ fontSize: 11, color: 'var(--text-muted)', textTransform: 'capitalize' }}>{(yo.rol || '').toLowerCase()}</div>
-                  </div>
-                </div>
-              </div>
-            );
-          })()}
-          {loading ? (
-            <div style={{ padding: 40, textAlign: 'center' }}><span className="spinner-border spinner-border-lg"></span></div>
-          ) : Object.keys(groupedEmpleados).length === 0 ? (
-            <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-muted)' }}>No hay empleados</div>
-          ) : (
-            Object.keys(groupedEmpleados).sort().map(letter => (
-              <div key={letter}>
-                <div
-                  style={{
-                    position: 'sticky',
-                    top: 0,
-                    padding: '3px 16px',
-                    fontSize: 11,
-                    fontWeight: 'bold',
-                    color: 'var(--text-muted)',
-                    backgroundColor: 'white',
-                    borderBottom: '1px solid #E4E6EA',
-                  }}
-                >
-                  {letter}
-                </div>
-                {groupedEmpleados[letter].map(emp => {
-                  const isSelected = selectedEmpleado?.uid === emp.uid;
-                  const theme = ROL_COLORS[emp.rol] || COLORS.primary;
+              <>
+                {currentUser && filtroRol === 'todos' && !searchText && (() => {
+                  const yo = empleados.find(e => e.uid === currentUser.uid);
+                  if (!yo) return null;
                   return (
-                    <div
-                      key={emp.id}
-                      onClick={() => handleSelect(emp)}
-                      onContextMenu={(e) => handleContextMenu(e, emp)}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 10,
-                        padding: '6px 16px',
-                        cursor: 'pointer',
-                        backgroundColor: isSelected ? '#F4F5F7' : 'white',
-                        transition: 'background-color 0.15s',
-                      }}
-                    >
-                      <EmpleadoAvatar empleado={emp} size={32} />
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: 14, fontWeight: isSelected ? 600 : 'normal', color: 'var(--text-dark)', display: 'flex', alignItems: 'center', gap: 6 }}>
-                          {emp.nombre}
-                          {emp.activo === false && (
-                            <span style={{ fontSize: 10, color: '#EF4444' }}>Inactivo</span>
-                          )}
-                        </div>
+                    <section className="inicio-section">
+                      <div className="inicio-section-head">
+                        <h2>Yo</h2>
                       </div>
-                    </div>
+                      <div className="inicio-carousel inicio-carousel--tight">
+                        <StaffHeroCard emp={yo} tienda={getTiendaById(yo.tiendaAsignada || yo.tiendaId)} yo onOpen={handleSelect} onContext={handleContextMenu} />
+                      </div>
+                    </section>
+                  );
+                })()}
+
+                {ROL_GROUPS.map(group => {
+                  const showYo = currentUser && filtroRol === 'todos' && !searchText;
+                  const emps = filteredEmpleados.filter(e =>
+                    group.roles.includes((e.rol || '').toUpperCase()) &&
+                    !(showYo && e.uid === currentUser?.uid)
+                  );
+                  if (emps.length === 0) return null;
+                  return (
+                    <section key={group.key} className="inicio-section">
+                      <div className="inicio-section-head">
+                        <h2>{group.label}</h2>
+                        <span className="staff-section-count">{emps.length}</span>
+                      </div>
+                      <div className="inicio-carousel inicio-carousel--tight">
+                        {emps.map(emp => (
+                          <StaffHeroCard key={emp.id || emp.uid} emp={emp} tienda={getTiendaById(emp.tiendaAsignada || emp.tiendaId)} onOpen={handleSelect} onContext={handleContextMenu} />
+                        ))}
+                      </div>
+                    </section>
                   );
                 })}
-              </div>
-            ))
-          )}
-        </div>
+              </>
+            )}
+          </>
+        )}
       </div>
-
-      <EmpleadoDetalle
-        empleado={selectedEmpleado}
-        tiendas={tiendas}
-        onEdit={() => handleEdit(selectedEmpleado)}
-        onNuevaTarea={() => setShowNuevaTarea(true)}
-        onBack={() => setSelectedEmpleado(null)}
-      />
 
       {contextMenu && (
         <div

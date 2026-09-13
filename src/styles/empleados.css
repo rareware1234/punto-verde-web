@@ -1,21 +1,13 @@
 /* ============================================
-   EMPLEADOS — Split view nativo
-   Patrón idéntico a Tiendas/Products (que sí funcionan en iPad).
+   EMPLEADOS — Directorio de Staff estilo Inicio
+   Clona la pantalla de Inicio (inicio.css): header blanco +
+   secciones con carruseles de hero-cards sobre el gradiente.
    ============================================ */
 
-/* content-area se convierte en flex column para que el container
-   pueda resolver height:100% correctamente en Safari iOS. */
-.content-area:has(.empleados-container) {
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  padding-top: 0 !important;
-  padding-left: 0 !important;
-  padding-right: 0 !important;
-  padding-bottom: 0 !important;
-}
+/* El layout ya lo aporta `.inicio-page` (inicio.css):
+   content-area transparente para ver el gradiente de `.app`. */
 
-/* Grids de estadísticas — base global */
+/* Grids de estadísticas del detalle — base global */
 .emp-stats-grid,
 .emp-mini-stats {
   display: grid;
@@ -23,181 +15,242 @@
   grid-template-columns: repeat(2, 1fr);
 }
 
-/* ============================================
-   DESKTOP ≥ 1024px
-   ============================================ */
-@media (min-width: 1024px) {
-  /* Split view — mismo patrón que .tiendas-page en Tiendas.css */
-  .empleados-container {
-    display: flex;
-    flex-direction: row;
-    height: 100%;       /* igual que tiendas-page */
-    overflow: hidden;
-    background: white;
-  }
+/* ── Header ── */
+.staff-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
 
-  /* Sidebar lista — columna flex fija de 360px */
-  .empleados-sidebar {
-    width: 360px;
-    flex-shrink: 0;
-    border-right: 1px solid #E4E6EA;
-    background: white;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-  }
+.staff-add-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  color: #fff;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  backdrop-filter: blur(14px) saturate(160%);
+  -webkit-backdrop-filter: blur(14px) saturate(160%);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  transition: transform 0.12s ease, background 0.15s ease;
+}
+.staff-add-btn:active { transform: scale(0.94); }
 
-  /* Título + botón: fijos, nunca hacen scroll */
-  .empleados-list-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 24px 16px 12px;
-    border-bottom: 1px solid #E4E6EA;
-    flex-shrink: 0;
-  }
+.staff-avatar-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+  cursor: pointer;
+  border: 2px solid rgba(255, 255, 255, 0.55);
+  background: rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.staff-avatar-btn img { width: 100%; height: 100%; object-fit: cover; }
+.staff-avatar-btn span { color: #fff; font-weight: 700; font-size: 15px; }
 
-  /* Search + chips: fijos, sin sticky */
-  .mobile-sticky-header.empleados-sticky {
-    position: static !important;
-    margin: 0 !important;
-    flex-shrink: 0;
-    background: white;
-    border-bottom: 1px solid #E4E6EA;
-    padding: 0;
-  }
+/* ── Toolbar (búsqueda + chips) ── */
+.staff-toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
 
-  /* Lista: ÚNICO elemento que hace scroll.
-     overscroll-behavior:contain evita que el scroll se propague
-     al body cuando llega al final (bug crítico en iOS/iPad). */
-  .empleados-list-scroll {
-    flex: 1;
-    min-height: 0;
-    overflow-y: auto;
-    overflow-x: hidden;
-    overscroll-behavior: contain;
-    background: white;
-  }
+.staff-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+  height: 40px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  backdrop-filter: blur(14px) saturate(160%);
+  -webkit-backdrop-filter: blur(14px) saturate(160%);
+}
+.staff-search i { color: rgba(255, 255, 255, 0.7); font-size: 13px; }
+.staff-search input {
+  flex: 1;
+  min-width: 0;
+  background: none;
+  border: none;
+  outline: none;
+  color: #fff;
+  font-size: 13.5px;
+}
+.staff-search input::placeholder { color: rgba(255, 255, 255, 0.6); }
+.staff-search-clear {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+}
 
-  /* Panel de detalle: scroll independiente */
-  .empleados-detalle {
-    flex: 1;
-    min-width: 0;
-    min-height: 0;
-    overflow-y: auto;
-    overflow-x: hidden;
-    overscroll-behavior: contain;
-    background: #F4F5F7;
-  }
+.staff-chips {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.staff-chip {
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  background: rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.9);
+  transition: background 0.15s ease;
+}
+.staff-chip.active {
+  background: #fff;
+  border-color: #fff;
+  color: var(--role-primary);
+}
 
-  /* Estado vacío: visible en desktop */
-  .empleados-detalle-empty {
-    display: flex;
-  }
+/* Conteo de cada sección (junto al h2) */
+.staff-section-count {
+  font-size: 12px;
+  font-weight: 800;
+  color: rgba(255, 255, 255, 0.6);
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.14);
+}
 
-  /* Botón volver: oculto en desktop */
-  .empleados-detalle-back {
-    display: none !important;
-  }
-
-  /* Stats: 4 columnas */
-  .emp-stats-grid,
-  .emp-mini-stats {
-    grid-template-columns: repeat(4, 1fr);
-  }
+/* Estado vacío */
+.staff-empty {
+  margin: 48px auto;
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.75);
+  text-align: center;
 }
 
 /* ============================================
-   MOBILE ≤ 1023px
+   TARJETA DE EMPLEADO — hero-card del carrusel
    ============================================ */
-@media (max-width: 1023px) {
-  .empleados-container {
-    display: flex;
-    flex-direction: column;
-    flex: 1;
+.hero-card--emp {
+  width: 260px;
+  height: 300px;
+  cursor: pointer;
+}
+.hero-card--emp .hero-card-title {
+  margin-top: 16px;
+  font-size: 19px;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.emp-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.emp-card-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  flex-shrink: 0;
+}
+.emp-card-yo,
+.emp-card-inactivo {
+  font-size: 10px;
+  font-weight: 800;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+}
+.emp-card-inactivo { background: rgba(220, 38, 38, 0.6); }
+
+.emp-card-sub {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.75);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.emp-card-footer {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.emp-card-role {
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  padding: 4px 11px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.26);
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.emp-card-num {
+  font-size: 10px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.65);
+  white-space: nowrap;
+}
+
+/* ============================================
+   DETALLE — EmpleadoDetalle embebido en layout flat
+   (modo card-open de Inicio)
+   ============================================ */
+.inicio-card-open .empleados-detalle {
+  background: transparent;
+  overflow: visible;
+}
+
+@media (min-width: 1024px) {
+  .inicio-card-open .empleados-detalle {
+    flex: none;
     min-height: 0;
-    overflow: hidden;
-    background: white;
-  }
-
-  .empleados-sidebar {
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-    min-height: 0;
-    overflow: hidden;
-    width: 100%;
-    border-right: none;
-    background: white;
-  }
-
-  /* Con empleado seleccionado: ocultar lista */
-  .empleados-sidebar.has-selection {
-    display: none !important;
-  }
-
-  /* Estado vacío: oculto en móvil */
-  .empleados-detalle-empty {
-    display: none !important;
-  }
-
-  /* Título + botón: en la navbar superior */
-  .empleados-list-header {
-    display: none !important;
-  }
-
-  /* Sticky header: anula position:sticky global (index.css) y el margin:-16px
-     que jalaba el contenido a la izquierda. */
-  .mobile-sticky-header.empleados-sticky {
-    position: relative !important;
-    margin: 0 !important;
-    flex-shrink: 0;
-    background: white;
-    border-bottom: 1px solid #E4E6EA;
     overflow: visible;
-    padding-top: calc(env(safe-area-inset-top, 0px) + 52px);
-    padding-left: env(safe-area-inset-left, 0px);
-    padding-right: env(safe-area-inset-right, 0px);
   }
-
-  /* Ocultar scrollbar de chips */
-  .mobile-sticky-header.empleados-sticky > div:last-child {
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-  }
-  .mobile-sticky-header.empleados-sticky > div:last-child::-webkit-scrollbar {
-    display: none;
-  }
-
-  /* Lista scrollable */
-  .empleados-list-scroll {
-    flex: 1;
-    min-height: 0;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-    overscroll-behavior: contain;
-    padding-bottom: env(safe-area-inset-bottom, 0px);
-    background: white;
-  }
-
-  /* Botón volver: visible en móvil */
-  .empleados-detalle-back {
+  /* En desktop el detalle también necesita botón volver */
+  .inicio-card-open .empleados-detalle-back {
     display: flex !important;
   }
+}
 
-  /* Detalle: llena todo, scroll suave */
-  .empleados-detalle {
-    flex: 1;
-    min-height: 0;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-    overscroll-behavior: contain;
-    background: #F4F5F7;
+@media (max-width: 1023px) {
+  /* El hero del detalle arranca debajo del mobile-topbar */
+  .inicio-card-open .empleados-detalle > div:first-child {
     padding-top: calc(env(safe-area-inset-top, 0px) + 52px);
   }
+}
 
+/* Stats del detalle: 4 columnas en desktop */
+@media (min-width: 1024px) {
   .emp-stats-grid,
   .emp-mini-stats {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(4, 1fr);
   }
 }
