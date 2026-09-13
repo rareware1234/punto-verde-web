@@ -107,7 +107,7 @@ const StaffHeroCard = ({ emp, tienda, yo = false, onOpen, onContext }) => {
       <img className="hero-card-emblem" src={EMP_FORMATO_LOGO[tienda?.formato] || empLogoLight} alt="" />
       <div className="emp-card-top">
         <div className="emp-card-avatar">
-          <EmpleadoAvatar empleado={emp} size={44} />
+          <EmpleadoAvatar empleado={emp} size={64} />
         </div>
         {yo && <span className="emp-card-yo">Yo</span>}
         {!yo && emp.activo === false && <span className="emp-card-inactivo">Inactivo</span>}
